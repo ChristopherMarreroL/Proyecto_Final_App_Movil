@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class VisitService {
-  final String _baseUrl = 'https://adamix.net/minerd';
+  final String _baseUrl = 'https://adamix.net/minerd/def';
 
   Future<bool> registerVisit({
     required String cedulaDirector,
@@ -23,8 +23,8 @@ class VisitService {
       throw Exception('Token de autenticación no encontrado');
     }
 
-    final url = '$_baseUrl/def/registrar_visita.php'; // Ajustar la URL
-    final request = http.MultipartRequest('POST', Uri.parse(url))
+    final url = Uri.parse('$_baseUrl/registro_visita.php?token=$token');
+    final request = http.MultipartRequest('POST', url)
       ..fields['cedulaDirector'] = cedulaDirector
       ..fields['codigoCentro'] = codigoCentro
       ..fields['motivo'] = motivo
@@ -34,7 +34,6 @@ class VisitService {
       ..fields['longitud'] = longitud
       ..fields['fecha'] = fecha
       ..fields['hora'] = hora
-      ..fields['token'] = token
       ..files.add(await http.MultipartFile.fromPath('fotoEvidencia', fotoEvidencia.path));
 
     final response = await request.send();
@@ -44,9 +43,24 @@ class VisitService {
       final data = json.decode(responseData.body);
       return data['exito'];
     } else {
-      print('Error al comunicarse con el servidor: ${responseData.statusCode}');
-      print('Response: ${responseData.body}');
       throw Exception('Error al comunicarse con el servidor');
+    }
+  }
+
+  Future<List<dynamic>> fetchIncidents() async {
+    final token = await AuthService().getToken();
+    if (token == null) {
+      throw Exception('Token de autenticación no encontrado');
+    }
+
+    final url = Uri.parse('$_baseUrl/situaciones.php?token=$token');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data;
+    } else {
+      throw Exception('Error al cargar las incidencias');
     }
   }
 }
