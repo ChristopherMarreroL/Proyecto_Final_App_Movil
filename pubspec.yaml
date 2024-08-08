@@ -41,7 +41,7 @@ dependencies:
   geolocator: ^10.1.1  # Baja la versión para evitar conflictos
   url_launcher: ^6.1.12
   shared_preferences: ^2.1.2
-
+  flutter_map_marker_popup: ^7.0.0
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -5,9 +5,9 @@ class Visit {
   final String cedulaDirector;
   final String codigoCentro;
   final String motivo;
-  final String comentario;
-  final String? notaVoz;
-  final String? fotoEvidencia;
+  final String? comentario; // Make nullable if not always present
+  final String? notaVoz; // Nullable
+  final String? fotoEvidencia; // Nullable
   final String latitud;
   final String longitud;
   final String fecha;
@@ -18,7 +18,7 @@ class Visit {
     required this.cedulaDirector,
     required this.codigoCentro,
     required this.motivo,
-    required this.comentario,
+    this.comentario,
     this.notaVoz,
     this.fotoEvidencia,
     required this.latitud,
@@ -29,17 +29,17 @@ class Visit {
 
   factory Visit.fromJson(Map<String, dynamic> json) {
     return Visit(
-      id: json['id'],
-      cedulaDirector: json['cedula_director'],
-      codigoCentro: json['codigo_centro'],
-      motivo: json['motivo'],
-      comentario: json['comentario'],
-      notaVoz: json['nota_voz'],
-      fotoEvidencia: json['foto_evidencia'],
-      latitud: json['latitud'],
-      longitud: json['longitud'],
-      fecha: json['fecha'],
-      hora: json['hora'],
+      id: json['id'] ?? '', // Use a default value if null
+      cedulaDirector: json['cedula_director'] ?? 'N/A', // Default if null
+      codigoCentro: json['codigo_centro'] ?? 'N/A', // Default if null
+      motivo: json['motivo'] ?? 'N/A', // Default if null
+      comentario: json['comentario'], // Nullable
+      notaVoz: json['nota_voz'], // Nullable
+      fotoEvidencia: json['foto_evidencia'], // Nullable
+      latitud: json['latitud'] ?? '0.0', // Default if null
+      longitud: json['longitud'] ?? '0.0', // Default if null
+      fecha: json['fecha'] ?? 'N/A', // Default if null
+      hora: json['hora'] ?? 'N/A', // Default if null
     );
   }
 

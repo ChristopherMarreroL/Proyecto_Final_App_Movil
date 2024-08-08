@@ -21,11 +21,11 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              'Nombre: Juan Pérez',
+              'Nombre: Tecnico MINERD',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const Text(
-              'Matrícula: 12345678',
+              'Matrícula: 2022-1009',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),

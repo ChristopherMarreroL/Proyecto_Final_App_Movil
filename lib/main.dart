@@ -36,15 +36,59 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'MINERD App',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        primaryColor: const Color(0xFF1A237E), // Deep Purple for a modern look
+        hintColor: const Color(0xFFF57C00), // Orange accent for highlights
+        scaffoldBackgroundColor: const Color(0xFFF5F5F5), // Light gray for the background
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.blueAccent,
+          elevation: 4, // Adds shadow to AppBar
+          shadowColor: Colors.black54,
+          backgroundColor: Color(0xFF1A237E),
           foregroundColor: Colors.white,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontSize: 22.0,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
         ),
         textTheme: const TextTheme(
-          headlineLarge: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-          bodyMedium: TextStyle(fontSize: 16.0),
+          headlineLarge: TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 16.0,
+            height: 1.5, // Line height for better readability
+            color: Colors.black54,
+          ),
+        ),
+        buttonTheme: const ButtonThemeData(
+          buttonColor: Color(0xFFF57C00),
+          textTheme: ButtonTextTheme.primary,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 3,
+            shadowColor: Colors.black45,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
+          ),
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.black12),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Color(0xFF1A237E)),
+          ),
         ),
       ),
       initialRoute: '/',
@@ -55,7 +99,6 @@ class MyApp extends StatelessWidget {
         '/incident_registration': (context) => const IncidentRegistrationScreen(),
         '/visits_list': (context) => const VisitsListScreen(),
         '/visit_registration': (context) => const VisitRegistrationScreen(),
-        '/visits_map': (context) => const VisitsMapScreen(),
         '/school_by_code': (context) => const SchoolByCodeScreen(),
         '/director_by_cedula': (context) => const DirectorByCedulaScreen(),
         '/about': (context) => const AboutScreen(),
@@ -64,7 +107,7 @@ class MyApp extends StatelessWidget {
         '/news': (context) => const NewsScreen(),
         '/weather': (context) => const WeatherScreen(),
         '/horoscope': (context) => const HoroscopeScreen(),
-        '/register': (context) => const RegisterScreen(),  // Add this line
+        '/register': (context) => const RegisterScreen(), // Add this line
       },
     );
   }

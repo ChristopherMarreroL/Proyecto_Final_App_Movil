@@ -1,16 +1,17 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import '../models/visit.dart'; // Make sure to import the Visit model
 
 class VisitService {
-  final String _baseUrl = 'https://adamix.net/minerd/def';
+  final String _baseUrl = 'adamix.net';
 
+  // Register a new visit
   Future<bool> registerVisit({
     required String cedulaDirector,
     required String codigoCentro,
     required String motivo,
-    required File fotoEvidencia,
+    required String fotoEvidencia,
     required String comentario,
     required String notaVoz,
     required String latitud,
@@ -23,44 +24,79 @@ class VisitService {
       throw Exception('Token de autenticación no encontrado');
     }
 
-    final url = Uri.parse('$_baseUrl/registro_visita.php?token=$token');
-    final request = http.MultipartRequest('POST', url)
-      ..fields['cedulaDirector'] = cedulaDirector
-      ..fields['codigoCentro'] = codigoCentro
-      ..fields['motivo'] = motivo
-      ..fields['comentario'] = comentario
-      ..fields['notaVoz'] = notaVoz
-      ..fields['latitud'] = latitud
-      ..fields['longitud'] = longitud
-      ..fields['fecha'] = fecha
-      ..fields['hora'] = hora
-      ..files.add(await http.MultipartFile.fromPath('fotoEvidencia', fotoEvidencia.path));
+    // Construct the query parameters
+    final queryParameters = {
+      'cedula_director': cedulaDirector,
+      'codigo_centro': codigoCentro,
+      'motivo': motivo,
+      'foto_evidencia': fotoEvidencia,
+      'comentario': comentario,
+      'nota_voz': notaVoz,
+      'latitud': latitud,
+      'longitud': longitud,
+      'fecha': fecha,
+      'hora': hora,
+      'token': token,
+    };
 
-    final response = await request.send();
-    final responseData = await http.Response.fromStream(response);
+    // Use the correct path for the endpoint
+    final uri = Uri.https(
+        _baseUrl, 'minerd/minerd/registrar_visita.php', queryParameters);
 
-    if (responseData.statusCode == 200) {
-      final data = json.decode(responseData.body);
-      return data['exito'];
-    } else {
+    try {
+      print('Request URI: $uri'); // Debugging line to check the final URI
+
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['exito']) {
+          print('Visita registrada con éxito');
+          return true;
+        } else {
+          throw Exception('Error en el registro: ${data['mensaje']}');
+        }
+      } else {
+        throw Exception(
+            'Error al comunicarse con el servidor: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error en _registerVisit: $e');
       throw Exception('Error al comunicarse con el servidor');
     }
   }
 
-  Future<List<dynamic>> fetchIncidents() async {
-    final token = await AuthService().getToken();
-    if (token == null) {
-      throw Exception('Token de autenticación no encontrado');
-    }
+  // Fetch the list of visits
+  Future<List<Visit>> fetchVisits(String token) async {
+    // Construct the query parameters
+    final queryParameters = {
+      'token': token,
+    };
 
-    final url = Uri.parse('$_baseUrl/situaciones.php?token=$token');
-    final response = await http.get(url);
+    // Use the correct path for the endpoint
+    final uri = Uri.https(_baseUrl, 'minerd/def/situaciones.php', queryParameters);
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data;
-    } else {
-      throw Exception('Error al cargar las incidencias');
+    try {
+      print('Request URI: $uri'); // Debugging line to check the final URI
+
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['exito']) {
+          print('Visitas fetched successfully');
+          return (data['datos'] as List)
+              .map((visitData) => Visit.fromJson(visitData))
+              .toList();
+        } else {
+          throw Exception('Error al obtener visitas: ${data['mensaje']}');
+        }
+      } else {
+        throw Exception('Error al comunicarse con el servidor: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error en fetchVisits: $e');
+      throw Exception('Error al comunicarse con el servidor');
     }
   }
 }

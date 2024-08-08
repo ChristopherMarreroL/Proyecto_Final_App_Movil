@@ -1,10 +1,7 @@
-// lib/screens/visits/visits_list_screen.dart
-
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/visit.dart';
-import '../../models/incident.dart';
-import '../../services/incident_service.dart';
+import '../../services/auth_service.dart';
+import '../../services/visit_service.dart';
 import 'visit_detail_screen.dart';
 
 class VisitsListScreen extends StatefulWidget {
@@ -15,28 +12,25 @@ class VisitsListScreen extends StatefulWidget {
 }
 
 class _VisitsListScreenState extends State<VisitsListScreen> {
-  final IncidentService _incidentService = IncidentService();
-  late Future<List<Incident>> _incidents = Future.value([]);
+  final VisitService _visitService = VisitService();
+  late Future<List<Visit>> _visits;
 
   @override
   void initState() {
     super.initState();
-    _loadTokenAndFetchIncidents();
+    _visits = _fetchVisits();
   }
 
-  Future<void> _loadTokenAndFetchIncidents() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-
-    if (token != null) {
-      setState(() {
-        _incidents = _incidentService.fetchIncidents(token);
-      });
-    } else {
-      // Maneja el caso donde el token no está disponible
-      setState(() {
-        _incidents = Future.error('Token no encontrado');
-      });
+  Future<List<Visit>> _fetchVisits() async {
+    try {
+      final token = await AuthService().getToken();
+      if (token != null) {
+        return await _visitService.fetchVisits(token);
+      } else {
+        throw Exception('Token no encontrado');
+      }
+    } catch (e) {
+      return Future.error(e);
     }
   }
 
@@ -45,55 +39,121 @@ class _VisitsListScreenState extends State<VisitsListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Visitas Registradas'),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF1A237E),
+        elevation: 4,
+        shadowColor: Colors.black54,
       ),
-      body: FutureBuilder<List<Incident>>(
-        future: _incidents,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            final incidents = snapshot.data ?? [];
-            final visits = incidents.map((incident) => _convertIncidentToVisit(incident)).toList();
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF283593), Color(0xFF3949AB), Color(0xFF1A237E)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: FutureBuilder<List<Visit>>(
+          future: _visits,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              );
+            } else {
+              final visits = snapshot.data ?? [];
 
-            return ListView.builder(
-              itemCount: visits.length,
-              itemBuilder: (context, index) {
-                final visit = visits[index];
-                return ListTile(
-                  title: Text(visit.codigoCentro),
-                  subtitle: Text('${visit.motivo} - ${visit.fecha}'),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => VisitDetailScreen(visit: visit),
-                      ),
-                    );
-                  },
+              if (visits.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'No hay visitas registradas.',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
                 );
-              },
-            );
-          }
-        },
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(16.0),
+                itemCount: visits.length,
+                itemBuilder: (context, index) {
+                  final visit = visits[index];
+                  return _buildVisitCard(visit, context);
+                },
+              );
+            }
+          },
+        ),
       ),
     );
   }
 
-  Visit _convertIncidentToVisit(Incident incident) {
-    return Visit(
-      id: incident.id,
-      cedulaDirector: 'N/A', // Si no hay campo cedulaDirector, usa un valor por defecto
-      codigoCentro: incident.centro,
-      motivo: incident.titulo,
-      comentario: incident.descripcion,
-      notaVoz: incident.audioPath,
-      fotoEvidencia: incident.fotoPath,
-      latitud: '0.0', // Usa valores por defecto o calcula si es necesario
-      longitud: '0.0',
-      fecha: incident.fecha,
-      hora: 'N/A', // Usa un valor por defecto si no existe en Incident
+  Widget _buildVisitCard(Visit visit, BuildContext context) {
+    return Card(
+      color: Colors.white,
+      shadowColor: Colors.black26,
+      elevation: 6,
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+        leading: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A237E),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.location_on, color: Colors.white, size: 40),
+        ),
+        title: Text(
+          visit.codigoCentro,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF283593),
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.info_outline, color: Color(0xFF55409E), size: 18),
+                const SizedBox(width: 5),
+                Text(
+                  visit.motivo,
+                  style: const TextStyle(fontSize: 16, color: Colors.black87),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(Icons.calendar_today, color: Color(0xFF55409E), size: 18),
+                const SizedBox(width: 5),
+                Text(
+                  visit.fecha,
+                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ],
+            ),
+          ],
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, color: Color(0xFF283593)),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => VisitDetailScreen(visit: visit),
+            ),
+          );
+        },
+      ),
     );
   }
 }

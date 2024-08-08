@@ -14,7 +14,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _apellidoController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _telefonoController = TextEditingController();
-  final TextEditingController _fechaNacimientoController = TextEditingController();
+  final TextEditingController _fechaNacimientoController =
+  TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -75,16 +76,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Registro'),
+        centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
-              TextFormField(
+              const Text(
+                'Crea tu cuenta',
+                style: TextStyle(
+                  fontSize: 28.0,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A237E),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              _buildTextField(
                 controller: _cedulaController,
-                decoration: const InputDecoration(labelText: 'Cédula'),
+                label: 'Cédula',
+                icon: Icons.person_outline,
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -93,9 +106,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return null;
                 },
               ),
-              TextFormField(
+              _buildTextField(
                 controller: _nombreController,
-                decoration: const InputDecoration(labelText: 'Nombre'),
+                label: 'Nombre',
+                icon: Icons.text_fields,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor ingrese su nombre';
@@ -103,9 +117,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return null;
                 },
               ),
-              TextFormField(
+              _buildTextField(
                 controller: _apellidoController,
-                decoration: const InputDecoration(labelText: 'Apellido'),
+                label: 'Apellido',
+                icon: Icons.text_fields,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor ingrese su apellido';
@@ -113,24 +128,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return null;
                 },
               ),
-              TextFormField(
+              _buildTextField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Correo'),
+                label: 'Correo',
+                icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor ingrese su correo';
                   }
                   // Add email validation
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                      .hasMatch(value)) {
                     return 'Ingrese un correo válido';
                   }
                   return null;
                 },
               ),
-              TextFormField(
+              _buildTextField(
                 controller: _telefonoController,
-                decoration: const InputDecoration(labelText: 'Teléfono'),
+                label: 'Teléfono',
+                icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -143,48 +161,95 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return null;
                 },
               ),
-              TextFormField(
+              _buildTextField(
                 controller: _fechaNacimientoController,
-                decoration: const InputDecoration(labelText: 'Fecha de Nacimiento (yyyy-mm-dd)'),
+                label: 'Fecha de Nacimiento (yyyy-mm-dd)',
+                icon: Icons.calendar_today_outlined,
                 keyboardType: TextInputType.datetime,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor ingrese su fecha de nacimiento';
                   }
                   // Validate the date format
-                  final dateRegExp = RegExp(r'^\d{4}-\d{2}-\d{2}$'); // YYYY-MM-DD format
+                  final dateRegExp = RegExp(r'^\d{4}-\d{2}-\d{2}$');
                   if (!dateRegExp.hasMatch(value)) {
                     return 'Formato de fecha incorrecto';
                   }
                   return null;
                 },
               ),
-              TextFormField(
+              _buildTextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Contraseña'),
+                label: 'Contraseña',
+                icon: Icons.lock_outline,
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor ingrese su contraseña';
                   }
-                  // Add password length validation
                   if (value.length < 6) {
                     return 'La contraseña debe tener al menos 6 caracteres';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               if (_isLoading)
-                const CircularProgressIndicator()
+                const Center(
+                  child: CircularProgressIndicator(),
+                )
               else
                 ElevatedButton(
                   onPressed: _register,
-                  child: const Text('Registrarse'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1A237E),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Registrarse',
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // Custom text field builder
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: Colors.grey[600]),
+          labelText: label,
+          filled: true,
+          fillColor: Colors.grey[200],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Colors.grey),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFF1A237E)),
+          ),
+        ),
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        validator: validator,
       ),
     );
   }
